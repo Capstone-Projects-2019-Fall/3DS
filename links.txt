@@ -1,0 +1,3 @@
+https://www.engineeringbigdata.com/face-and-eye-detection-using-opencv-and-python-cv2/
+https://medium.com/@stepanfilonov/tracking-your-eyes-with-python-3952e66194a6
+https://pythonprogramming.net/haar-cascade-object-detection-python-opencv-tutorial/
