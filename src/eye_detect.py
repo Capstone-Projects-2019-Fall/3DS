@@ -1,12 +1,19 @@
-
+#Module Purpose: Detect if a driver’s eyes become tired, close, or turn away from the road
 import cv2
 
-face_cascPath = 'C:/Users/mattv/Anaconda3/Lib/site-packages/cv2/data/haarcascade_frontalface_alt.xml'
-eye_cascPath= 'C:/Users/mattv/Anaconda3/Lib/site-packages/cv2/data/haarcascade_eye_tree_eyeglasses.xml'  #face detect model
+face_cascPath = cv2.data.haarcascades + 'haarcascade_frontalface_alt.xml'
+eye_cascPath= cv2.data.haarcascades + 'haarcascade_eye_tree_eyeglasses.xml'  #face detect model
 faceCascade = cv2.CascadeClassifier(face_cascPath)
 eyeCascade = cv2.CascadeClassifier(eye_cascPath)
 min_size = 25
 
+# Pre-Conditions: A person must be within the frame of the camera
+# Post-Conditions: None
+# Parameters: face_cascade, eye_cascade, min_size
+    # Face_cascade: Open_CV built-in haar cascade classifier for detecting human faces in a frame
+    # eye_cascade: Open_CV built-in haar cascade classifier for detecting human eyes in a frame
+    # Min_size: The minimum radius required in eye detection for the eyes to be considered detected. E.g. if eyes are closed, the radius will be smaller than min-size, so eyes will not be detected
+# Return value: Boolean, is True if eyes are detected within the frame, is false otherwise
 def findEyes(faceCascade, eyeCascade, min_size):
     cap = cv2.VideoCapture(0)
     while 1:
