@@ -1,0 +1,77 @@
+import cv2
+import numpy as np
+import pygame
+
+#Setup classifier
+
+face_cascade=cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+
+eye_cascade=cv2.CascadeClassifier('haarcascade_eye.xml')
+
+phone_cascade=cv2.CascadeClassifier("curated5stage20MFAcascade.xml")
+
+min_size = 0
+
+cap = cv2.VideoCapture(0)
+
+pygame.mixer.init()
+pygame.mixer.music.load("winxp.mp3")
+didDetect = 0
+
+
+while True:
+    ret, img=cap.read()
+
+    gray=cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    #Use classifier to detect faces
+    faces=face_cascade.detectMultiScale(gray, 1.1, 1)
+
+    phones=phone_cascade.detectMultiScale(gray, 1.1, 5)
+
+    for (x,y,w,h) in phones:
+        cv2.rectangle(img, (x,y), (x+w, y+h), (255,0,255), 2)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        #cv2.putText(img,'Phone',(x-w,y-h), font, 0.5, (11,255,255), 2, cv2.LINE_AA)
+
+    if len(faces) == 0:
+        pass
+    elif len(faces) > 0:
+        # Draw a rectangle around the faces
+        for (x, y, w, h) in faces:
+            #cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            pass
+        #frame_tmp = img[faces[0][1]:faces[0][1] + faces[0][3], faces[0][0]:faces[0][0] + faces[0][2]:1, :]
+        #frame = frame[faces[0][1]:faces[0][1] + faces[0][3], faces[0][0]:faces[0][0] + faces[0][2]:1]
+            #cv2.rectangle(img, (x,y), (x+w, y+h), (255,0,0), 3)
+        roi=img[y:y+h, x:x+w]
+        roi_gray=gray[y:y+h, x:x+w]
+        eyes = eye_cascade.detectMultiScale(
+            roi_gray,
+            scaleFactor=1.1,
+            minNeighbors=5,
+            minSize=(min_size, min_size),
+            # flags = cv2.CV_HAAR_SCALE_IMAGE
+        )
+        for (ex, ey, ew, eh) in eyes:
+            cv2.rectangle(roi, (ex,ey), (ex+ew, ey+eh), (0,255,0), 2)
+        if len(eyes) == 0:
+            if(didDetect == 1):
+                didDetect = 0
+                pygame.mixer.music.play()
+                pass
+            else:
+                pass
+
+        else:
+            didDetect = 1
+            pass
+
+        #frame_tmp = cv2.resize(frame_tmp, (400, 400), interpolation=cv2.INTER_LINEAR)
+    cv2.imshow('Face Recognition (Press Q to exit)', img)
+
+    waitkey = cv2.waitKey(1)
+
+    if waitkey == ord('q') or waitkey == ord('Q'):
+        cv2.destroyAllWindows()
+        break
