@@ -1,7 +1,7 @@
 import cv2
-import numpy as np
-from picamera.array import PiRGBArray
-from picamera import PiCamera
+# import numpy as np # Code for PiCamera, not necessary for laptop testing
+# from picamera.array import PiRGBArray # see line above
+# from picamera import PiCamera # see line above
 import pygame
 import time
 
@@ -17,17 +17,27 @@ min_size = 25
 start_time = 0
 elapsed_time = 0
 
-cap = PiCamera()
-cap.resolution = (640, 480)
-cap.framerate = 32
-rawCap = PiRGBArray(cap, size=(640, 480))
+# Code for PiCamera, not necessary for laptop testing
+# cap = PiCamera()
+# cap.resolution = (640, 480)
+# cap.framerate = 32
+# rawCap = PiRGBArray(cap, size=(640, 480))
+
+cap = cv2.VideoCapture(0) # Access camera using OpenCV libraries instead of PiCamera - for laptop testing
 
 pygame.mixer.init()
 pygame.mixer.music.load("winxp.mp3")
 didDetect = 0
 
 
-for frame in cap.capture_continuous(rawCap, format="bgr", use_video_port=True):
+# for frame in cap.capture_continuous(rawCap, format="bgr", use_video_port=True): # PiCamera code
+while(1): # Code for camera using OpenCV
+
+    # OpenCV code (in lieu of PiCamera - for laptop testing)
+    ret, img = cap.read() # Fills an array before sending anything to the display, cause of latency in RasPi
+    frame = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # End of OpenCV code
+    
     if(start_time != 0):
         elapsed_time = time.time() - start_time
     
@@ -46,7 +56,7 @@ for frame in cap.capture_continuous(rawCap, format="bgr", use_video_port=True):
         cv2.putText(img,'Phone',(x-w,y-h), font, 0.5, (11,255,255), 2, cv2.LINE_AA)
     
     #if phone is detected
-        #pygame.mixer.music.play()
+        #make note that phone is detected, should change rule that as soon as eye is not detected (instead of waiting 3 secs) to sound alarm
 
     if len(faces) == 0:
         if(elapsed_time > 3 and start_time != 0):
