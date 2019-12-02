@@ -1,7 +1,7 @@
 import cv2
-phone_cascade=cv2.CascadeClassifier('Phone_Cascade.xml')
+phone_cascade=cv2.CascadeClassifier('cascade.xml')
 
-def findEyes(phone_cascade)
+def findEyes(phone_cascade):
     cap=cv2.VideoCapture(0)
 
     while True:
@@ -16,3 +16,5 @@ def findEyes(phone_cascade)
             cv2.rectangle(img, (x,y), (x+w, y+h), (255,0,255), 2)
             font = cv2.FONT_HERSHEY_SIMPLEX
             cv2.putText(img,'Phone',(x-w,y-h), font, 0.5, (11,255,255), 2, cv2.LINE_AA)
+        cv2.imshow('Face Recognition', img)
+findEyes(phone_cascade)

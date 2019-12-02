@@ -1,11 +1,28 @@
 #Module Purpose: Detect if a driver’s eyes become tired, close, or turn away from the road
 import cv2
+from imageai.Detection import ObjectDetection
+import os
+from multiprocessing import Process
 
-face_cascPath = cv2.data.haarcascades + 'haarcascade_frontalface_alt.xml'
-eye_cascPath= cv2.data.haarcascades + 'haarcascade_eye_tree_eyeglasses.xml'  #face detect model
-faceCascade = cv2.CascadeClassifier(face_cascPath)
-eyeCascade = cv2.CascadeClassifier(eye_cascPath)
-min_size = 25
+cap = cv2.VideoCapture(0)
+
+
+def findPhones():
+    execution_path = os.getcwd()
+    detector = ObjectDetection()
+    detector.setModelTypeAsRetinaNet()
+    detector.setModelPath( os.path.join(execution_path , "resnet50_coco_best_v2.0.1.h5"))
+    detector.loadModel(detection_speed="faster")
+    #custom_objects = detector.CustomObjects(person=True, cell_phone=True)
+    while(1):
+        try:
+            detections = detector.detectObjectsFromImage(input_image=os.path.join(execution_path , "test45.jpg"), output_image_path=os.path.join(execution_path , "imagenew.jpg"))
+            for eachObject in detections:
+                print(eachObject['name'])
+        except ValueError:
+            print('bad file')
+
+
 
 # Pre-Conditions: A person must be within the frame of the camera
 # Post-Conditions: None
@@ -14,8 +31,13 @@ min_size = 25
     # eye_cascade: Open_CV built-in haar cascade classifier for detecting human eyes in a frame
     # Min_size: The minimum radius required in eye detection for the eyes to be considered detected. E.g. if eyes are closed, the radius will be smaller than min-size, so eyes will not be detected
 # Return value: Boolean, is True if eyes are detected within the frame, is false otherwise
-def findEyes(faceCascade, eyeCascade, min_size):
-    cap = cv2.VideoCapture(0)
+def findEyes():
+    face_cascPath = cv2.data.haarcascades + 'haarcascade_frontalface_alt.xml'
+    eye_cascPath= cv2.data.haarcascades + 'haarcascade_eye_tree_eyeglasses.xml'  #face detect model
+    faceCascade = cv2.CascadeClassifier(face_cascPath)
+    eyeCascade = cv2.CascadeClassifier(eye_cascPath)
+    min_size = 25
+
     while 1:
         ret, img = cap.read()
 
@@ -30,7 +52,7 @@ def findEyes(faceCascade, eyeCascade, min_size):
         )
         # print("Found {0} faces!".format(len(faces)))
         if len(faces) == 0:
-            print(0)
+            pass
         elif len(faces) > 0:
             # Draw a rectangle around the faces
             for (x, y, w, h) in faces:
@@ -51,10 +73,10 @@ def findEyes(faceCascade, eyeCascade, min_size):
             for (ex, ey, ew, eh) in eyes:
                 cv2.rectangle(roi, (ex,ey), (ex+ew, ey+eh), (0,255,0), 2)
             if len(eyes) == 0:
-                print(0)
+                pass
 
             else:
-                print(1)
+                pass
 
             #frame_tmp = cv2.resize(frame_tmp, (400, 400), interpolation=cv2.INTER_LINEAR)
         cv2.imshow('Face Recognition', img)
@@ -65,7 +87,8 @@ def findEyes(faceCascade, eyeCascade, min_size):
             cv2.destroyAllWindows()
             break
 
-def main():
-    findEyes(faceCascade, eyeCascade, min_size)
-
-main()
+if __name__ == '__main__':
+    t1 = Process(target=findPhones)
+    t2 = Process(target=findEyes)
+    t1.start()
+    t2.start()
