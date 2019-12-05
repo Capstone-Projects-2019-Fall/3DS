@@ -41,24 +41,21 @@ def readData():
     yms = yAccl / 250 * 9.8
     zms = zAccl / 250 * 9.8
 
-    # Calculate Total Acceleration
-    accel = numpy.array([xms, yms])
-    t = numpy.linalg.norm(accel)
-
     # Output data to screen - debugging
 #     print ("Acceleration in X-Axis : ", xms, "m/s^2")
 #     print ("Acceleration in Y-Axis : ", yms, "m/s^2")
 #     print ("Acceleration in Z-Axis : ", zms, "m/s^2")
 #     print ("Total Acceleration : ", t, "m/s^2")
     
-    return t
+    return xms, yms
 # end of readData()
 
 # Function to write data to text file
-def writeData(tData, vData):
-    rn = datetime.now()
-    timestamp = rn.strftime("%H:%M:%S")
-    fs.write(timestamp + " -- " + "Tot: " + "%0.6f" % tData + ", Vel: " + "%0.6f" % vData + "\n")
+def writeData(xData, yData, tData):
+#    rn = datetime.now()
+#    timestamp = rn.strftime("%H:%M:%S")
+#    fs.write(timestamp + " -- " + "Vel: " + "%0.6f" % vData + "\n")
+    fs.write(xData, " ", yData, " ", tData)
     return
 # end of writeData()
 
@@ -72,23 +69,31 @@ def calculateVelocity(oldV, t, freq):
 
 # Function to find standard acceleration
 def fsa():
-    one = readData()
-    two = readData()
-    three = readData()
-    four = readData()
-    five = readData()
+    x1, y1 = readData()
+    x2, y2 = readData()
+    x3, y3 = readData()
+    x4, y4 = readData()
+    x5, y5 = readData()
     
-    stan = (one + two + three + four + five) / 5
-    return stan
+    stanX = (x1 + x2 + x3 + x4 + x5) / 5
+    stanY = (y1 + y2 + y3 + y4 + y5) / 5
+    return stanX, stanY
 # end of fsa()
 
 # Function to normalize acceleration (try to get rid of noise)
 def normalizeAcc(t, stan):
-    if (t - stan < 1.5 and t - stan > -1.5):
+    if (t - stan < 2.0 and t - stan > -2.0):
         return 0
     else:
-        return (t - stan)
+        return t
 # end of normalizeAcc()
+
+# Function to calculate total vector
+def vectorCal(x, y):
+    arr = numpy.array([x, y])
+    t = numpy.linalg.norm(arr)
+    return t
+# end of vectorCal()
 
 # Setup
 # Get I2C bus
@@ -123,17 +128,21 @@ count = 0
 velocity = 0
 readLimit = 1200
 frequency = 0.5
-minutes = ((readLimit * frequency) / 60)
+seconds = readLimit * frequency
+minutes = (seconds / 60)
 print("\tCollecting data every " + str(frequency) + " second(s) for " + str(minutes) + " minute(s).")
+fs.write(frequency, " ", seconds)
 
-stanAcc = fsa() # Calculate a standard acceleration to mark zero point
+stanX, stanY = fsa() # Calculate a standard acceleration to mark zero point
 
 while count < readLimit:
-    t = readData()
-    acc = normalizeAcc(t, stanAcc)
-    velocity = calculateVelocity(velocity, acc, frequency)
-#    print(acc, ", ", velocity)
-    writeData(acc, velocity)
+    x, y = readData()    
+    xAcc = normalizeAcc(x, stanX)
+    yAcc = normalizeAcc(y, stanY)
+    velX = calculateVelocity(velocity, xAcc, frequency)
+    velY = calculateVelocity(velocity, yAcc, frequency)
+    velT = vectorCal(velX, velY)
+    writeData(velX, velY, velT)
     time.sleep(frequency)
     count += 1
 
