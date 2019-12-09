@@ -99,8 +99,8 @@ for frame in cap.capture_continuous(rawCap, format="bgr", use_video_port=True):
             cv2.rectangle(roi, (ex,ey), (ex+ew, ey+eh), (0,255,0), 2)
         if len(eyes) == 0:
             if(hasPhone and didDetect and moving):
-                #pygame.mixer.music.play()
-                print("Play")
+                pygame.mixer.music.play()
+                #print("Play")
                 pass
             elif(elapsed_time > 3 and start_time != 0 and moving):
                 pygame.mixer.music.play()
