@@ -38,7 +38,7 @@ for frame in cap.capture_continuous(rawCap, format="bgr", use_video_port=True):
     #Use classifier to detect faces
     faces=face_cascade.detectMultiScale(gray, 1.1, 1)
 
-    phones=phone_cascade.detectMultiScale(gray, 3, 8)
+    phones=phone_cascade.detectMultiScale(gray, 3, 10)
 
     for (x,y,w,h) in phones:
         #cv2.rectangle(img, (x,y), (x+w, y+h), (255,0,255), 2)

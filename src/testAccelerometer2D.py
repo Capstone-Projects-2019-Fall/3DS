@@ -47,16 +47,16 @@ def readData():
 #     print ("Acceleration in Z-Axis : ", zms, "m/s^2")
 #     print ("Total Acceleration : ", t, "m/s^2")
     
-    return yms
+    return xms, yms
 # end of readData()
 
 # Function to write data to text file
-def writeData(tData):
+def writeData(xData, yData, tData):
 #    rn = datetime.now()
 #    timestamp = rn.strftime("%H:%M:%S")
 #    fs.write(timestamp + " -- " + "Vel: " + "%0.6f" % vData + "\n")
-    fs.write(str(tData) + "\n")
-#     print(str(tData) + "\n")
+    fs.write(str(xData) + " " + str(yData) + " " + str(tData) + "\n")
+#     print(str(xData) + " " + str(yData) + " " + str(tData) + "\n")
     return
 # end of writeData()
 
@@ -70,14 +70,15 @@ def calculateVelocity(oldV, t, freq):
 
 # Function to find standard acceleration
 def fsa():
-    y1 = readData()
-    y2 = readData()
-    y3 = readData()
-    y4 = readData()
-    y5 = readData()
+    x1, y1 = readData()
+    x2, y2 = readData()
+    x3, y3 = readData()
+    x4, y4 = readData()
+    x5, y5 = readData()
     
+    stanX = (x1 + x2 + x3 + x4 + x5) / 5
     stanY = (y1 + y2 + y3 + y4 + y5) / 5
-    return stanY
+    return stanX, stanY
 # end of fsa()
 
 # Function to normalize acceleration (try to get rid of noise)
@@ -89,24 +90,30 @@ def normalizeAcc(t, stan):
 # end of normalizeAcc()
 
 # Function to calculate total vector
-# def vectorCal(x, y):
-#     arr = numpy.array([x, y])
-#     t = numpy.linalg.norm(arr)
-#     return t
+def vectorCal(x, y):
+    if(y == 0):
+        return x
+    elif(x == 0):
+        return y
+    else:
+        arrX = numpy.array([x, 0])
+        arrY = numpy.array([0, y])
+        t = numpy.cross(arrX, arrY)
+        return t
 # end of vectorCal()
 
 # Function to zero velocity if there are no changes in the next 3 seconds
-def checkZero(oldVel, newVel, initTime):
+def checkZero(x, y, oldVel, newVel, initTime):
     rn = time.time()
     if(oldVel == newVel):
         if(initTime == 0):
-            return newVel, rn
+            return x, y, newVel, rn
         elif(rn - initTime < 3):
-            return newVel, initTime
+            return x, y, newVel, initTime
         else:
-            return 0.0, 0.0
+            return 0.0, 0.0, 0.0, 0.0
     else:
-        return newVel, 0.0
+        return x, y, newVel, 0.0
 # end of checkZero()
 
 # Setup
@@ -132,15 +139,16 @@ time.sleep(0.5)
 
 # Getting date and time to create name of test file
 now = datetime.now()
-dt = now.strftime("%m-%d-%Y_%H:%M_1D")
+dt = now.strftime("%m-%d-%Y_%H:%M_2D")
 
 # Opening filestream to write to test file
 fs = open("/home/pi/3DS/tests/" + dt + ".txt", 'a+')
 print("\tFile opened with name " + dt + ".txt in location /home/pi/3DS/tests.")
 
 count = 0
-velocity = 0
-velY = 0
+velocity = 0.0
+velX = 0.0
+velY = 0.0
 readLimit = 3000
 frequency = 0.1
 timecount = 0.0
@@ -150,15 +158,18 @@ print("\tCollecting data every " + str(frequency) + " second(s) for " + str(minu
 fs.write(str(frequency) + " " + str(seconds) + "\n")
 # print(str(frequency) + " " + str(seconds) + "\n")
 
-stanY = fsa() # Calculate a standard acceleration to mark zero point
+stanX, stanY = fsa() # Calculate a standard acceleration to mark zero point
 
 while count < readLimit:
-    y = readData()
+    x, y = readData()    
+    xAcc = normalizeAcc(x, stanX)
     yAcc = normalizeAcc(y, stanY)
+    velX = calculateVelocity(velX, xAcc, frequency)
+    velY = calculateVelocity(velY, yAcc, frequency)
     oldVel = velocity
-    velocity = calculateVelocity(velocity, yAcc, frequency)
-    velocity, timecount = checkZero(oldVel, velocity, timecount)
-    writeData(velocity)
+    velocity = vectorCal(velX, velY)
+    velX, velY, velocity, timecount = checkZero(velX, velY, oldVel, velocity, timecount)
+    writeData(velX, velY, velocity)
     time.sleep(frequency)
     count += 1
 
