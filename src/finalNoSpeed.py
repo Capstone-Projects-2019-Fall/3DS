@@ -11,11 +11,11 @@ face_cascade=cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 eye_cascade=cv2.CascadeClassifier('haarcascade_eye.xml')
 phone_cascade=cv2.CascadeClassifier("Phone_Cascade.xml")
 
-speedFile = "speedData.txt"
-fh = open(speedFile, "r")
-print("Reading from speed file for presentation purposes.")
-lines = fh.readlines()
-fh.close()
+# speedFile = "speedData.txt"
+# fh = open(speedFile, "r")
+# print("Reading from speed file for presentation purposes.")
+# lines = fh.readlines()
+# fh.close()
 
 min_size = 20
 start_time = 0
@@ -27,27 +27,27 @@ cap.framerate = 32
 rawCap = PiRGBArray(cap, size=(640, 480))
 
 pygame.mixer.init()
-pygame.mixer.music.load("Honk.wav")
+pygame.mixer.music.load("winxp.wav")
 didDetect = False
-moving = False
-lineCount = 0
-listSize = len(lines)
+# moving = False
+# lineCount = 0
+# listSize = len(lines)
 
 for frame in cap.capture_continuous(rawCap, format="bgr", use_video_port=True):
     hasPhone = False
-    if(lineCount == listSize):
-        print("End of speed file.")
-        break
-    line = lines[lineCount]
-    lineCount += 1
-    if(line == "0.0\n"):
-        if(moving):
-            print("Not moving now.")
-        moving = False
-    else:
-        if(not moving):
-            print("Starting to move.")
-        moving = True
+#     if(lineCount == listSize):
+#         print("End of speed file.")
+#         break
+#     line = lines[lineCount]
+#     lineCount += 1
+#     if(line == "0.0"):
+#         if(moving):
+#             print("Not moving now.")
+#         moving = False
+#     else:
+#         if(not moving):
+#             print("Starting to move.")
+#         moving = True
     
     if(start_time != 0):
         elapsed_time = time.time() - start_time
@@ -68,7 +68,7 @@ for frame in cap.capture_continuous(rawCap, format="bgr", use_video_port=True):
         hasPhone = True
 
     if len(faces) == 0:
-        if(elapsed_time > 3 and start_time != 0 and moving):
+        if(elapsed_time > 3 and start_time != 0):
             pygame.mixer.music.play()
             elapsed_time = 0
             start_time = 0
@@ -95,11 +95,11 @@ for frame in cap.capture_continuous(rawCap, format="bgr", use_video_port=True):
         for (ex, ey, ew, eh) in eyes:
             cv2.rectangle(roi, (ex,ey), (ex+ew, ey+eh), (0,255,0), 2)
         if len(eyes) == 0:
-            if(hasPhone and didDetect and moving):
-                pygame.mixer.music.play()
-#                 print("Play")
+            if(hasPhone and didDetect):
+                #pygame.mixer.music.play()
+                print("Play")
                 pass
-            elif(elapsed_time > 3 and start_time != 0 and moving):
+            elif(elapsed_time > 3 and start_time != 0):
                 pygame.mixer.music.play()
                 elapsed_time = 0
                 start_time = 0
